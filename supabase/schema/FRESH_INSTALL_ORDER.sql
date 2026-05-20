@@ -1,0 +1,26 @@
+-- =============================================================================
+-- FRESH DATABASE — read this first
+--
+-- Vector RAG (embeddings, hybrid search) lives in Zilliz Cloud, not Postgres.
+-- Supabase Postgres: chat, auth, ingestion_file_state only.
+--
+-- PATH A — Recommended (single file, idempotent)
+--   File:  full_schema_empty_database.sql
+--   Repo:  pnpm db:schema   (DATABASE_URL in apps/api/.env)
+--
+-- PATH B — Modular (Supabase SQL Editor, run in order)
+--   1. 000_base_schema.sql           — chat_sessions, chat_logs
+--   2. 001_app_users.sql             — JWT login + RLS
+--   3. 004_chat_sessions_title.sql   — conversation title
+--   4. 005_chat_sessions_metadata.sql — pin, updated_at, triggers, indexes
+--   5. 002_ingestion_file_state.sql  — ingest checkpoint
+--   6. 008_analyze.sql               — ANALYZE
+--
+-- Upgrading from legacy pgvector/knowledge_base on Postgres:
+--   supabase/migrations/010_drop_knowledge_base_pgvector.sql
+--
+-- After schema: optional seed -> apps/api: pnpm seed:user (SEED_* in .env)
+-- Vector collection: pnpm zilliz:setup (Zilliz env in .env)
+-- =============================================================================
+
+SELECT 1 AS fresh_install_order_ok;

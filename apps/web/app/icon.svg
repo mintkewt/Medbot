@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Medbot favicon">
+  <rect x="4" y="4" width="56" height="56" rx="14" fill="#d97757" />
+  <path d="M17 22h30a9 9 0 0 1 9 9v6a9 9 0 0 1-9 9H35l-8 7v-7H17a9 9 0 0 1-9-9v-6a9 9 0 0 1 9-9z" fill="#fff"/>
+  <path d="M32 28a2.5 2.5 0 0 1 2.5 2.5V34H38a2.5 2.5 0 0 1 0 5h-3.5v3.5a2.5 2.5 0 0 1-5 0V39H26a2.5 2.5 0 0 1 0-5h3.5v-3.5A2.5 2.5 0 0 1 32 28z" fill="#d97757"/>
+</svg>

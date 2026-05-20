@@ -1,0 +1,38 @@
+{
+  "name": "@medical-chatbot/api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon src/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "export:umls-meta-parquet": "python scripts/export-umls-meta-parquet.py",
+    "ingest:umls-meta": "python -u scripts/ingest-umls-meta-parquet.py",
+    "nomic:cache": "node scripts/cache-nomic-model.js",
+    "db:schema": "node scripts/apply-schema.js",
+    "seed:user": "node scripts/seed-user.js",
+    "seed:user:maybe": "node scripts/seed-user.js --if-present",
+    "zilliz:setup": "node scripts/setup-zilliz-collection.js",
+    "clean": "rm -rf node_modules"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@openrouter/sdk": "^0.11.2",
+    "@supabase/supabase-js": "^2.86.2",
+    "@xenova/transformers": "^2.17.2",
+    "@zilliz/milvus2-sdk-node": "^2.6.13",
+    "axios": "^1.13.2",
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.2",
+    "postgres": "3.4.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11"
+  }
+}

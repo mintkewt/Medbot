@@ -1,0 +1,93 @@
+{
+  "folders": [
+    {
+      "title": "API Documentation",
+      "children": [],
+      "pages": [
+        {
+          "title": "API standards",
+          "content": "# API standards — Medbot\n\nMonorepo **pnpm** + **Turborepo**: backend **Express 5** (JavaScript), frontend **Next.js 16** (TypeScript).\n\n## 1. Base path\n* All HTTP routes live under the **/api** prefix (e.g. **/api/auth/login**, **/api/chat/stream**).\n* **No** `/v1`-style version segment in URLs today.\n* Production: the web app usually rewrites **/api/*** to the backend origin via **NEXT_PUBLIC_API_URL** (no trailing slash).\n\n## 2. Format\n* Request/response: **JSON**, UTF-8.\n* Body fields use **camelCase** (e.g. **question**, **sessionId**, **isPinned**).\n* Streaming chat: **POST /api/chat/stream** returns **SSE** (`text/event-stream`), not WebSocket.\n\n## 3. HTTP methods (as implemented)\n* **GET**: health, list sessions, history, search logs.\n* **POST**: login, chat (JSON or SSE), session cleanup.\n* **PATCH**: session metadata (title, pinned).\n* **DELETE**: delete session.\n\n## 4. Pagination & query (chat sessions)\n* **GET /api/chat/sessions**: query **limit**, **offset**, **q** (filter title), **pinnedOnly=true**.\n* **GET /api/chat/search**: **q** (minimum 2 characters), **limit**, **offset**.\n\n## 5. Rate limit\n* In-memory middleware per IP; headers **X-RateLimit-Limit**, **X-RateLimit-Remaining**.\n* **429**: body often includes **retryAfterMs** (limit window)."
+        },
+        {
+          "title": "Authentication Flow",
+          "content": "# Authentication — JWT\n\n## 1. Mechanism\n* **One JWT** after login (no refresh token in this codebase yet).\n* Payload: **sub** (user id), **email**; signed with **JWT_SECRET**; lifetime **JWT_EXPIRES_IN** (env).\n* Passwords stored with **bcrypt** in **app_users** (Supabase Postgres), RLS enabled; API uses **service role** when it must read/write users.\n\n## 2. Flow\n1. **POST /api/auth/login** — body **{ email, password }** → **{ token, user }**.\n2. Client sends **Authorization: Bearer** with the JWT for protected routes.\n3. **GET /api/auth/me** — Bearer → **{ user: { id, email } }**.\n4. Chat: all **/api/chat/*** except **GET /api/chat/health** require Bearer.\n\n## 3. Security\n* Production: HTTPS.\n* Do not commit secrets; only env templates belong in git."
+        },
+        {
+          "title": "RESTful Endpoints Reference",
+          "content": "# Endpoint reference (matches this repo)\n\nBase: API origin (e.g. dev **http://localhost:5000** — from **PORT** env).\n\n## Auth — /api/auth\n* **POST /api/auth/login** — no auth. Body: email, password.\n* **GET /api/auth/me** — Bearer.\n\n## Chat — /api/chat\n* **GET /api/chat/health** — no auth.\n* **POST /api/chat/message** — Bearer. Body: **question**, **sessionId?** → JSON answer.\n* **POST /api/chat/stream** — Bearer. Same body as above → **SSE** (stream_start, stream_chunk, stream_end / stream_error).\n* **GET /api/chat/sessions** — Bearer. Query: limit, offset, q, pinnedOnly.\n* **GET /api/chat/session/:sessionId/history** — Bearer.\n* **GET /api/chat/search** — Bearer. Query: q, limit, offset.\n* **PATCH /api/chat/session/:sessionId** — Bearer. Body: title?, isPinned?\n* **DELETE /api/chat/session/:sessionId** — Bearer.\n* **POST /api/chat/session/:sessionId/cleanup** — Bearer.\n\n## Notes\n* RAG and vector search have **no** separate REST surface — they run inside message/stream handling.\n* Vector knowledge lives in **Zilliz Cloud**, not an upload endpoint in this API."
+        },
+        {
+          "title": "RAG & Vector Search (Medbot)",
+          "content": "# RAG (Retrieval-Augmented Generation)\n\n## 1. Concept\n**RAG** augments the LLM answer with knowledge chunks from **Zilliz Cloud** (Milvus): embed question → cosine similarity → top-K → merge into the prompt.\n\n## 2. Chat flow (backend)\n0. **Simple greetings** (hi/hello/hey) → fixed reply, no full LLM call.\n1. **Normalizer**: medical abbreviations (static map + UMLS lookup via scalar filter on Zilliz).\n2. **Embed query**: **@xenova/transformers** Nomic ONNX, **768 dimensions**, prefixes per embedding contract (default **search_query:** + space).\n3. **Search**: Zilliz, **COSINE** metric, **AUTOINDEX**, filter **is_active == true**, score ≥ MIN_RELEVANCE.\n4. **Rerank**: dedupe, boost UMLS/CUI/Q&A, keep **MATCH_COUNT** (5).\n5. **confidence** = average similarity: if **below HIGH_RELEVANCE** (0.65) → OneMin **without** KB, on error Gemini; **from 0.65 up** → OneMin **with** KB.\n\n## 3. Ingest\n* Parquet UMLS (licensed) → **Python** scripts (torch, transformers, **pymilvus**).\n* Document prefix must match contract; upsert: ingest_key, embedding, content, source_type, metadata_json, umls_str_lower, is_active.\n\n## 4. Config (constants)\n* MIN_RELEVANCE_SCORE **0.35**, HIGH_RELEVANCE_SCORE **0.65**, MATCH_COUNT **5**.\n* Changing model/prefix/dim → **re-embed** the whole collection.\n\n## 5. Postgres\n* Supabase stores **chat_sessions**, **chat_logs**, **app_users**, **ingestion_file_state** — **not** RAG vectors."
+        },
+        {
+          "title": "Error Handling & Status Codes",
+          "content": "# Errors & HTTP codes\n\n## 1. Central error middleware\n* JSON response: **{ error: string }**.\n* If **NODE_ENV !== production**, **detail** may include the original error message for debugging.\n\n## 2. Common codes\n* **200** — OK.\n* **400** — body/query validation failed.\n* **401** — missing/invalid Bearer JWT (or invalid email/password on login).\n* **429** — rate limit: **error**, **message**, **retryAfterMs**.\n* **500** — unhandled error or **JWT_SECRET** not configured (auth middleware).\n\n## 3. SSE\n* **stream_error** event with payload **{ message }** when the stream pipeline fails."
+        }
+      ]
+    },
+    {
+      "title": "Development Workflow",
+      "children": [],
+      "pages": [
+        {
+          "title": "Git Branching Strategy",
+          "content": "# Git — suggestions\n\n* **main**: stable branch, production deploys.\n* **develop**: integration (if the team uses it).\n* **feature/**, **bugfix/**, **hotfix/** + descriptive names — per team convention.\n* Merge/PR rules (approvals, required CI) are for the team to decide."
+        },
+        {
+          "title": "Code Review Process",
+          "content": "# Code review\n\n* RAG: any **constants** changes (thresholds, MATCH_COUNT) need rationale + test no-KB / edge scores.\n* Embedding contract changes → plan **re-embed Zilliz**.\n* No PII in logs; no hardcoded secrets.\n* **pnpm lint** (Turbo) before merge; **Husky** + **lint-staged** may block console.log/debugger in apps/api and apps/web."
+        },
+        {
+          "title": "CI/CD Pipeline",
+          "content": "# CI/CD — as in this repo\n\n## Local / PR\n* **pnpm lint** — Turbo runs lint in workspaces that define it (web: ESLint).\n* **pnpm build** — Next build and dependent tasks.\n* The **api** package has no meaningful **test** script yet (placeholder); add tests as needed.\n\n## Deploy\n* No required GitHub Actions pipeline is described in the root manifest — configure CI per org (GitHub/GitLab/Vercel)."
+        },
+        {
+          "title": "Testing Strategy",
+          "content": "# Testing\n\n* **Frontend**: ESLint (**eslint-config-next**).\n* **Backend JS**: manual checks + **GET /api/chat/health**; Jest/Vitest can be added later.\n* **Python scripts** (UMLS export/ingest): integration against Parquet + Zilliz per environment.\n* E2E (Playwright/Cypress): optional, not required in-repo today."
+        },
+        {
+          "title": "Coding Standards & Conventions",
+          "content": "# Coding standards\n\n## Backend (apps/api)\n* **JavaScript** CommonJS, **Express** routes → controllers → services → providers.\n* camelCase for variables/functions; app constants in **config/constants**.\n\n## Frontend (apps/web)\n* **TypeScript**, React 19, App Router; Next ESLint.\n\n## General\n* **DRY**, **KISS**; identifiers should be clear English names."
+        }
+      ]
+    },
+    {
+      "title": "Deployment & Operations",
+      "children": [],
+      "pages": [
+        {
+          "title": "Environment Setup Guide",
+          "content": "# Development environment\n\n## Requirements\n* **Node.js 18+**, **pnpm 10** (root `packageManager`).\n* **Python 3.10+** if you run UMLS export/ingest.\n* Accounts: **Supabase** (Postgres), **Zilliz Cloud**, **1min.ai** and **Gemini** API keys.\n\n## Steps\n1. **pnpm install** (root).\n2. **pnpm setup:env** — copy env templates if missing.\n3. Fill **DATABASE_URL**, **SUPABASE_***, **JWT_SECRET**, **ZILLIZ_***, provider keys in backend env.\n4. **pnpm bootstrap** — Postgres schema + seed user (if **SEED_*** set).\n5. In api workspace: **pnpm zilliz:setup** — create vector collection.\n6. (Recommended) **pnpm nomic:cache** — download ONNX model.\n7. **pip install -r** the Python manifest under api `scripts/` (pyarrow, torch, transformers, pymilvus, …).\n8. **pnpm dev** — Turbo: web (often **3000**) + api (default **PORT** **5000**).\n\n## Not part of the default flow\n* This repo does **not** require Docker Compose / Redis / Alembic for the chat app."
+        },
+        {
+          "title": "Deployment Runbook",
+          "content": "# Deployment — checklist\n\n## Web (e.g. Vercel)\n* Project root **apps/web**; **NEXT_PUBLIC_API_URL** points to production API (no trailing slash).\n\n## API\n* Host Node separately (VM, container, PaaS) with full env; default **cors()** — tighten origin in production.\n\n## Data\n* Back up **Supabase** per your plan; **Zilliz** cluster per provider console.\n\n## Rollback\n* Deploy previous image/commit; verify health and Zilliz."
+        },
+        {
+          "title": "Monitoring & Alerting",
+          "content": "# Monitoring\n\n## Application\n* JSON logs to stdout: **LOG_LEVEL** (error, warn, info, http, debug).\n* **requestId** on requests for tracing.\n* **GET /api/chat/health** — smoke / load balancer.\n\n## Outside this repo\n* Metrics/logs (Prometheus, Grafana, Loki, Sentry) are infrastructure-level — not pre-wired in app code."
+        }
+      ]
+    },
+    {
+      "title": "Security",
+      "children": [],
+      "pages": [
+        {
+          "title": "Security Best Practices",
+          "content": "# Security — medical-chatbot\n\n* **JWT**: strong **JWT_SECRET**; HTTPS in production.\n* **Passwords**: bcrypt (**bcryptjs**); never return hashes to the client.\n* **Supabase RLS** on **app_users** — server uses service role when needed.\n* **Input**: schema validation middleware for chat/auth bodies; **question** length limits.\n* **Zilliz**: token server-only; never expose to the browser."
+        },
+        {
+          "title": "Secret Management",
+          "content": "# Secrets\n\n* **Do not** commit real env files.\n* Dev: local **apps/api** and **apps/web** env from templates in the repo.\n* Prod: secret manager / platform env vars (Vercel, Fly, K8s secrets, …).\n* **ONEMIN**, **GEMINI**, **ZILLIZ**, **SUPABASE** keys are server-side only (except public Supabase URL if needed)."
+        },
+        {
+          "title": "OWASP Compliance Checklist",
+          "content": "# OWASP — repo perspective\n\n1. **Access control**: JWT for chat; controllers check user ownership on sessions.\n2. **Crypto**: bcrypt passwords; TLS in production.\n3. **Injection**: Supabase/PostgREST and Zilliz SDKs — avoid manual SQL string concatenation in JS.\n4. **Secrets**: no keys hardcoded in source.\n5. **Logging**: do not log bodies with secrets; request logger redacts sensitive metadata."
+        }
+      ]
+    }
+  ],
+  "pages": []
+}

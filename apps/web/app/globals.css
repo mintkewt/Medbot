@@ -1,0 +1,201 @@
+@import "tailwindcss";
+/* Typography plugin must be registered for v4; otherwise `prose` is a no-op and
+   preflight zeros <p>/<ul> margins — markdown paragraphs look “stuck” together. */
+@plugin "@tailwindcss/typography";
+
+:root {
+  /* Claude-inspired light tokens */
+  --background: #f5f4ed;
+  --foreground: #141413;
+  --surface: #faf9f5;
+  --surface-strong: #ffffff;
+  --surface-muted: #e8e6dc;
+  --text-muted: #5e5d59;
+  --text-subtle: #87867f;
+  --border: #e8e6dc;
+  --border-soft: #f0eee6;
+  --accent: #c96442;
+  --accent-strong: #d97757;
+  --accent-foreground: #faf9f5;
+  --danger: #b53333;
+
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --duration-fast: 110ms;
+  --duration-base: 160ms;
+  --duration-slow: 220ms;
+
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 26px;
+  --radius-pill: 12px;
+
+  --type-display: clamp(2.25rem, 4.8vw, 4rem);
+  --type-heading: clamp(1.75rem, 3.2vw, 3.25rem);
+  --type-section: 1.125rem;
+  --type-body: 1rem;
+  --type-caption: 0.875rem;
+  --line-display: 1.12;
+  --line-heading: 1.2;
+  --line-section: 1.35;
+  --line-body: 1.6;
+  --line-caption: 1.45;
+
+  --state-hover: #ece9df;
+  --state-hover-soft: #f2efe6;
+  --state-focus-ring: #b5b1a6;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-ui);
+  --font-serif: var(--font-display);
+  --font-mono: var(--font-geist-mono);
+}
+
+.dark {
+  /* Claude-inspired dark tokens */
+  --background: #141413;
+  --foreground: #bfbdb4;
+  --surface: #30302e;
+  --surface-strong: #343430;
+  --surface-muted: #262624;
+  --text-muted: #b0aea5;
+  --text-subtle: #9f9d94;
+  --border: #30302e;
+  --border-soft: #3a3a36;
+  --accent: #d97757;
+  --accent-strong: #e28a6b;
+  --accent-foreground: #141413;
+  --danger: #d75f5f;
+  --state-hover: #30302e;
+  --state-hover-soft: #2a2a28;
+  --state-focus-ring: #b0aea5;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-ui), system-ui, sans-serif;
+  line-height: var(--line-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display), Georgia, serif;
+  letter-spacing: -0.01em;
+  line-height: var(--line-heading);
+}
+
+p, li, label, input, button, textarea {
+  font-family: var(--font-ui), system-ui, sans-serif;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+@layer utilities {
+  .type-display {
+    font-size: var(--type-display);
+    line-height: var(--line-display);
+    font-weight: 600;
+  }
+
+  .type-section {
+    font-size: var(--type-section);
+    line-height: var(--line-section);
+    font-weight: 600;
+  }
+
+  .type-body {
+    font-size: var(--type-body);
+    line-height: var(--line-body);
+  }
+
+  .type-caption {
+    font-size: var(--type-caption);
+    line-height: var(--line-caption);
+  }
+
+  /* Hide scrollbar — Firefox */
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  /* Hide scrollbar — Chrome/Safari/Edge */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Override @tailwindcss/typography defaults to respect our CSS variables */
+  .prose {
+    --tw-prose-body: var(--foreground);
+    --tw-prose-headings: var(--foreground);
+    --tw-prose-lead: var(--text-muted);
+    --tw-prose-links: var(--accent);
+    --tw-prose-bold: var(--foreground);
+    --tw-prose-counters: var(--text-subtle);
+    --tw-prose-bullets: var(--text-subtle);
+    --tw-prose-hr: var(--border);
+    --tw-prose-quotes: var(--foreground);
+    --tw-prose-quote-borders: var(--border);
+    --tw-prose-captions: var(--text-muted);
+    --tw-prose-code: var(--accent);
+    --tw-prose-pre-code: var(--foreground);
+    --tw-prose-pre-bg: var(--surface-muted);
+    --tw-prose-th-borders: var(--border);
+    --tw-prose-td-borders: var(--border);
+    /* Invert versions are identical since variables automatically handle the dark context */
+    --tw-prose-invert-body: var(--foreground);
+    --tw-prose-invert-headings: var(--foreground);
+    --tw-prose-invert-lead: var(--text-muted);
+    --tw-prose-invert-links: var(--accent);
+    --tw-prose-invert-bold: var(--foreground);
+    --tw-prose-invert-counters: var(--text-subtle);
+    --tw-prose-invert-bullets: var(--text-subtle);
+    --tw-prose-invert-hr: var(--border);
+    --tw-prose-invert-quotes: var(--foreground);
+    --tw-prose-invert-quote-borders: var(--border);
+    --tw-prose-invert-captions: var(--text-muted);
+    --tw-prose-invert-code: var(--accent);
+    --tw-prose-invert-pre-code: var(--foreground);
+    --tw-prose-invert-pre-bg: var(--surface-muted);
+    --tw-prose-invert-th-borders: var(--border);
+    --tw-prose-invert-td-borders: var(--border);
+  }
+}
+
+/* Page scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent; 
+}
+
+::-webkit-scrollbar-thumb {
+  background: #bcb7ac;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #9e998d;
+}
+
+/* Dark mode scrollbar */
+.dark ::-webkit-scrollbar-thumb {
+  background: #5e5d59;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #7d7b73;
+}

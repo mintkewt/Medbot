@@ -1,0 +1,79 @@
+{
+  "info": {
+    "name": "Medbot API",
+    "description": "REST endpoints backed by Express (`apps/api/src`). Set `{{api_base}}` to match `PORT` in `apps/api/.env` (e.g. `http://localhost:5000`).\n\nRealtime streaming uses HTTP SSE: `POST /api/chat/stream` with body `{ sessionId, question }`.\nThe server sends `stream_start` → multiple `stream_chunk` → `stream_end` (or `stream_error`).\n\n`POST /api/chat/message` returns the full answer in one response (no chunks), useful for Postman / server-to-server.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "api_base",
+      "value": "http://localhost:3000"
+    }
+  ],
+  "item": [
+    {
+      "name": "Chat",
+      "item": [
+        {
+          "name": "Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{api_base}}/api/chat/health",
+            "description": "Health check. Response: `{ \"status\": \"ok\", \"timestamp\": \"...\" }`"
+          }
+        },
+        {
+          "name": "Send message (sync)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"Hello, I need general health information.\",\n  \"sessionId\": \"\"\n}"
+            },
+            "url": "{{api_base}}/api/chat/message",
+            "description": "You may omit `sessionId` or leave it empty — the server creates a new Supabase session. Reuse an existing UUID to continue the same session.\n\nValidation: `question` (string 1–2000 chars), `sessionId` optional."
+          }
+        },
+        {
+          "name": "Send message (existing session)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"00000000-0000-4000-8000-000000000000\",\n  \"question\": \"Follow-up question in the same session.\"\n}"
+            },
+            "url": "{{api_base}}/api/chat/message",
+            "description": "Replace the UUID with the `sessionId` returned from the previous call."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Root",
+      "item": [
+        {
+          "name": "API root",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{api_base}}/",
+            "description": "Banner HTML: Medbot API is running"
+          }
+        }
+      ]
+    }
+  ]
+}

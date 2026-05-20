@@ -1,0 +1,35 @@
+{
+  "name": "medical-chatbot",
+  "private": true,
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "clean": "turbo clean && rm -rf .turbo node_modules",
+    "prepare": "husky",
+    "setup:env": "node scripts/setup-env.mjs",
+    "bootstrap": "node scripts/bootstrap.mjs",
+    "db:schema": "pnpm --filter @medical-chatbot/api run db:schema",
+    "seed:user": "pnpm --filter @medical-chatbot/api run seed:user",
+    "quickstart": "pnpm install && pnpm bootstrap"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.4.3",
+    "tailwindcss": "^4",
+    "turbo": "latest"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "bash -lc \"pnpm lint\"",
+      "node scripts/check-console-logs.js"
+    ]
+  },
+  "packageManager": "pnpm@10.0.0",
+  "pnpm": {
+    "overrides": {
+      "sharp": "^0.33.5"
+    }
+  }
+}

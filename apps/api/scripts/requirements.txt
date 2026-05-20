@@ -1,0 +1,22 @@
+# Python deps for apps/api/scripts (UMLS Parquet export + Zilliz ingest).
+#
+# From repo root:
+#   pip install -r apps/api/scripts/requirements.txt
+# From apps/api:
+#   pip install -r scripts/requirements.txt
+#
+# Export only (export-umls-meta-parquet.py): pyarrow (+ requests/dotenv if you use env loading).
+# Ingest (ingest-umls-meta-parquet.py): torch, transformers, pymilvus (Zilliz Cloud / Milvus).
+# GPU: install a torch build from https://pytorch.org/ that matches your CUDA version.
+
+# --- Shared (export + light tooling) ---
+pyarrow>=14.0.0
+requests>=2.28.0
+python-dotenv>=1.0.0
+
+# --- Ingest: embeddings (HF Nomic) ---
+torch>=2.0.0
+transformers>=4.36.0
+
+# --- Ingest: vector upsert to Zilliz Cloud (MilvusClient in ingest-umls-meta-parquet.py) ---
+pymilvus>=2.4.0

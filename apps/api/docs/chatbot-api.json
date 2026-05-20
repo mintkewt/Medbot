@@ -1,0 +1,98 @@
+{
+	"info": {
+		"_postman_id": "b6a7b3c2-1234-4567-8910-abcdef123456",
+		"name": "Medical Chatbot API",
+		"description": "API test collection: RAG retrieval, SSE streaming, and REST chat routes (1minAI/Gemini).",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "1234567"
+	},
+	"item": [
+		{
+			"name": "Chat Message (REST)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"userId\": \"test_user_01\",\n    \"question\": \"Can you write a short poem?\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/chat/message",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"chat",
+						"message"
+					]
+				},
+				"description": "Send a chat message to the bot.\n\nPayload:\n- userId: user id (routing).\n- question: the question.\n- sessionId (optional): omit to create a new session."
+			},
+			"response": []
+		},
+		{
+			"name": "Chat Message (With Session)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"userId\": \"test_user_01\",\n    \"sessionId\": \"<PASTE_SESSION_ID_HERE>\",\n    \"question\": \"What is the warranty process?\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/chat/message",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"chat",
+						"message"
+					]
+				},
+				"description": "Continue an existing conversation by including sessionId."
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000",
+			"type": "string"
+		}
+	]
+}
