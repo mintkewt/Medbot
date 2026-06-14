@@ -2,7 +2,7 @@
  * Routes embedQuery / embedDocument to ONNX (Nomic) or OpenRouter per EMBEDDING_PROVIDER.
  */
 const { embeddingProvider } = require('../config/embeddingContract');
-const nomic = require('./nomicEmbed');
+//const nomic = require('./nomicEmbed');
 const openRouter = require('./openRouterEmbed');
 
 function provider() {
