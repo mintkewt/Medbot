@@ -2,7 +2,7 @@
  * OpenRouter embeddings API via @openrouter/sdk (text input).
  * Requires OPENROUTER_API_KEY and EMBEDDING_DIM matching the chosen model output.
  */
-const { OpenRouter } = require('@openrouter/sdk');
+//const { OpenRouter } = require('@openrouter/sdk');
 const {
   OPENROUTER_EMBED_MODEL,
   queryPrefix,
@@ -13,16 +13,19 @@ const logger = require('./logger');
 
 let _client = null;
 
-function getClient() {
+async function getClient() {
   if (_client) return _client;
   const apiKey = process.env.OPENROUTER_API_KEY?.trim();
   if (!apiKey) {
     throw new Error('OPENROUTER_API_KEY is required when EMBEDDING_PROVIDER=openrouter');
   }
+  
+  // Nạp thư viện động (Dynamic Import) để tương thích với CommonJS
+  const { OpenRouter } = await import('@openrouter/sdk');
+  
   _client = new OpenRouter({ apiKey });
   return _client;
 }
-
 function toFloatVector(embedding) {
   if (Array.isArray(embedding)) {
     return embedding.map((x) => Number(x));
@@ -37,7 +40,7 @@ function toFloatVector(embedding) {
 async function embedPrefixed(text, prefixFn) {
   const p = prefixFn();
   const input = p ? `${p}${text}` : text;
-  const client = getClient();
+  const client = await getClient();
   const model = OPENROUTER_EMBED_MODEL;
 
   const res = await client.embeddings.generate({
