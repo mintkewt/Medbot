@@ -13,14 +13,14 @@ async function embedQuery(text) {
  // if (provider() === 'openrouter') {
     return openRouter.embedQuery(text);
   }
-  return nomic.embedQuery(text);
+ // return nomic.embedQuery(text);
 //}
 
 async function embedDocument(text) {
  // if (provider() === 'openrouter') {
     return openRouter.embedDocument(text);
   }
-  return nomic.embedDocument(text);
+ // return nomic.embedDocument(text);
 //}
 
 module.exports = {
