@@ -43,8 +43,8 @@ function normalizeZillizAddress(address) {
 const address = normalizeZillizAddress(rawAddress);
 
 const milvusClient = new MilvusClient({
-  address: process.env.ZILLIZ_ENDPOINT,
-  token: process.env.ZILLIZ_TOKEN,
+  address: address,
+  token: token,
   // Thêm đoạn này để nới lỏng thời gian chờ lên 60 giây (60000 ms)
   timeout: 60000 
 });
