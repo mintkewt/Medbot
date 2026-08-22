@@ -5,6 +5,8 @@ const GeminiProvider = require('../providers/gemini.provider');
 const OneMinProvider = require('../providers/onemin.provider');
 const CONSTANTS = require('../config/constants');
 const PROMPTS = require('../config/prompts');
+const { Langfuse } = require('langfuse');
+const langfuse = new Langfuse();
 
 let providers = null;
 
@@ -228,6 +230,17 @@ Return only the title, no explanation. Examples: "Heart health Q&A", "Pain medic
         ]);
         const threshold = CONSTANTS.RAG.HIGH_RELEVANCE_SCORE;
         const contextForHighConfidence = ragService.formatContext(documents);
+
+// 2. Tạo một generation tracking
+        const generation = langfuse.generation({
+            name: "AImedbot_QA",
+            input: normalizedQuestion,
+            metadata: { 
+                rag_context: contextForHighConfidence, // Để check Hallucination
+                confidence_score: confidence
+            }
+        });
+
         const { providerName, responseText } = await this.#generateAnswerByConfidence({
             confidence,
             confidenceMeta,
@@ -240,6 +253,15 @@ Return only the title, no explanation. Examples: "Heart health Q&A", "Pain medic
 
         logData.handled_by_layer = documents.length > 0 ? 3 : 2;
         logData.provider = providerName;
+
+// 3. Kết thúc tracking và gắn output
+        generation.end({
+            output: responseText,
+            level: "DEFAULT",
+            metadata: { provider: providerName }
+        });
+// 4. Force đẩy data lên server trước khi Vercel tắt function
+        await langfuse.flushAsync();
         return responseText;
     }
 
