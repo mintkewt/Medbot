@@ -7,7 +7,7 @@ class OneMinProvider extends IAIProvider {
   constructor() {
     super();
     // this.model = 'gemini-2.5-flash';
-    this.model = "gpt-4o-mini";
+    this.model = "gpt-4o-mini-phahong";
   }
 
   async generateResponse(userQuestion, context, history = [], opts = {}) {
