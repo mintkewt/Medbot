@@ -88,7 +88,7 @@ class OneMinProvider extends IAIProvider {
   }
 
   async generateResponseStream(userQuestion, context, history = [], onChunk) {
-    try {
+  
     const finalPrompt = PROMPTS.ONEMIN_PROMPT(context, history, userQuestion);
 
     const payload = {
@@ -163,13 +163,9 @@ class OneMinProvider extends IAIProvider {
         reject(err);
       });
     });
-    } catch (error) {
-      // 🌟 ĐOẠN NÀY LÀ CỨU CÁNH: Bắt mọi loại lỗi (kể cả 401, sai key, sập mạng) 
-      // và ném qua cho tầng ngoài xử lý Fallback sang Gemini một cách cực kỳ mượt mà!
-      logger.error("onemin.stream.request.failed", { message: error.message });
-      throw new Error("1minAI Stream Provider Failed");
+    } 
   }
 
-}
+
 
 module.exports = OneMinProvider;
